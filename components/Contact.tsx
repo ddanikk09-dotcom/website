@@ -9,15 +9,23 @@ const LINKS = [
 ];
 
 export default function Contact() {
-  const [sent, setSent] = useState(false);
-  const [f, setF] = useState({ name: "", email: "", msg: "" });
+  const [status, setStatus] = useState<"idle"|"sending"|"done"|"error">("idle");
   const inp: React.CSSProperties = { width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", padding: "14px 16px", color: "#fff", fontSize: "0.95rem", fontFamily: "inherit", outline: "none" };
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("sending");
+    const data = new FormData(e.currentTarget);
+    const res = await fetch("https://formspree.io/f/xrpeqzdo", { method: "POST", body: data, headers: { Accept: "application/json" } });
+    if (res.ok) { setStatus("done"); } else { setStatus("error"); }
+  }
+
   return (
     <section id="kontakt" className="section-pad" style={{ background: "rgba(255,255,255,0.015)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "72px", alignItems: "start" }} className="contact-grid">
         <div>
           <p style={{ fontSize: "0.78rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#818cf8", marginBottom: "12px" }}>Kontakt</p>
-          <h2 style={{ fontSize: "clamp(2rem,4vw,2.8rem)", fontWeight: 800, color: "#fff", marginBottom: "16px" }}>Skontaktuj sie <span className="gradient-text">ze mna</span></h2>
+          <h2 style={{ fontSize: "clamp(2rem,4vw,2.8rem)", fontWeight: 800, color: "#fff", marginBottom: "16px", letterSpacing: "-0.03em" }}>Skontaktuj sie <span className="gradient-text">ze mna</span></h2>
           <p style={{ fontSize: "1rem", color: "rgba(226,228,240,0.55)", lineHeight: 1.7, marginBottom: "40px" }}>Napisz do mnie - odpisze szybko.</p>
           <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
             {LINKS.map((s) => (
@@ -30,27 +38,30 @@ export default function Contact() {
           </div>
         </div>
         <div>
-          {sent ? (
+          {status === "done" ? (
             <div style={{ borderRadius: "20px", padding: "48px 32px", background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)", textAlign: "center" as const }}>
               <p style={{ fontSize: "1.2rem", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>Wiadomosc wyslana!</p>
               <p style={{ fontSize: "0.9rem", color: "rgba(226,228,240,0.5)" }}>Odpisze najszybciej jak to mozliwe.</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true); }}
-              style={{ borderRadius: "20px", padding: "32px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", flexDirection: "column" as const, gap: "16px" }} noValidate>
+            <form onSubmit={handleSubmit} style={{ borderRadius: "20px", padding: "32px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", flexDirection: "column" as const, gap: "16px" }}>
               <div>
                 <label htmlFor="cn" style={{ display: "block", fontSize: "0.8rem", color: "rgba(226,228,240,0.5)", marginBottom: "6px" }}>Imie / Firma</label>
-                <input id="cn" type="text" placeholder="Jan Kowalski" required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} style={inp} />
+                <input id="cn" name="name" type="text" placeholder="Jan Kowalski" required style={inp} />
               </div>
               <div>
                 <label htmlFor="ce" style={{ display: "block", fontSize: "0.8rem", color: "rgba(226,228,240,0.5)", marginBottom: "6px" }}>Email</label>
-                <input id="ce" type="email" placeholder="jan@firma.pl" required value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} style={inp} />
+                <input id="ce" name="email" type="email" placeholder="jan@firma.pl" required style={inp} />
               </div>
               <div>
                 <label htmlFor="cm" style={{ display: "block", fontSize: "0.8rem", color: "rgba(226,228,240,0.5)", marginBottom: "6px" }}>Wiadomosc</label>
-                <textarea id="cm" placeholder="Opowiedz mi o swojej firmie..." required rows={5} value={f.msg} onChange={(e) => setF({ ...f, msg: e.target.value })} style={{ ...inp, resize: "none" as const }} />
+                <textarea id="cm" name="message" placeholder="Opowiedz mi o swojej firmie..." required rows={5} style={{ ...inp, resize: "none" as const }} />
               </div>
-              <button type="submit" className="glow-btn" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", border: "none", padding: "14px", borderRadius: "12px", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer" }}>Wyslij wiadomosc</button>
+              {status === "error" && <p style={{ fontSize: "0.85rem", color: "#ef4444" }}>Blad wysylania. Sprobuj ponownie.</p>}
+              <button type="submit" disabled={status === "sending"} className="glow-btn"
+                style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", border: "none", padding: "14px", borderRadius: "12px", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer", opacity: status === "sending" ? 0.7 : 1 }}>
+                {status === "sending" ? "Wysylanie..." : "Wyslij wiadomosc"}
+              </button>
             </form>
           )}
         </div>
