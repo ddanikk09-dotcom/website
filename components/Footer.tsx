@@ -8,8 +8,8 @@ const footerLinks = [
 ];
 
 const socialLinks = [
-  { label: "Instagram", href: "https://instagram.com/TWÓJ_PROFIL" }, // TODO: replace
-  { label: "Facebook", href: "https://facebook.com/TWÓJ_PROFIL" },   // TODO: replace
+  { label: "Instagram", href: "https://www.instagram.com/webby_danilo" },
+  { label: "Facebook", href: "https://www.facebook.com/share/14wkNYjgSDf/" },
 ];
 
 export default function Footer() {
